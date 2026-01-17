@@ -53,6 +53,8 @@ export class SortFieldPipe implements PipeTransform {
 
   private seriesSortFields(value: SortField) {
     switch (value) {
+      case SortField.AmountUnRead:
+        return this.translocoService.translate('sort-field-pipe.amount-un-read');
       case SortField.SortName:
         return this.translocoService.translate('sort-field-pipe.sort-name');
       case SortField.Created:

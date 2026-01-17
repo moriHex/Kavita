@@ -42,6 +42,7 @@ public enum SortField
     /// By user rating
     /// </summary>
     UserRating = 10,
+    AmountUnRead = 11,
 
 }
 

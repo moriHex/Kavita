@@ -1,4 +1,5 @@
 using System.Linq;
+using API.Data;
 using API.DTOs.Filtering;
 using API.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -12,9 +13,11 @@ public static class SeriesSort
     /// Applies the correct sort based on <see cref="SortOptions"/>
     /// </summary>
     /// <param name="query"></param>
+    /// <param name="ctx"></param>
+    /// <param name="userId"></param>
     /// <param name="sortOptions"></param>
     /// <returns></returns>
-    public static IQueryable<Series> Sort(this IQueryable<Series> query, int userId, SortOptions? sortOptions)
+    public static IQueryable<Series> Sort(this IQueryable<Series> query, DataContext ctx, int userId, SortOptions? sortOptions)
     {
         // If no sort options, default to using SortName
         sortOptions ??= new SortOptions()
@@ -38,6 +41,11 @@ public static class SeriesSort
                 .Where(p => p.SeriesId == s.Id).Average(p => p.AverageScore), sortOptions),
             SortField.UserRating => query.DoOrderBy(s => s.Ratings.Where(r => r.SeriesId == s.Id && r.AppUserId == userId).Max(r => r.Rating), sortOptions)
                 .ThenBy(s => s.SortName.ToLower()),
+            SortField.AmountUnRead => query.DoOrderBy(s => s.Volumes.Sum(
+                v => v.Chapters.Count(
+                    c => c.UserProgress.Where(p => p.AppUserId == userId)
+                        .Select(p => p.PagesRead).FirstOrDefault() == 0
+                        )), sortOptions),
             SortField.Random => query.DoOrderBy(s => EF.Functions.Random(), sortOptions),
             _ => query
         };
