@@ -1,5 +1,4 @@
 using System.Linq;
-using API.Data;
 using API.DTOs.Filtering;
 using API.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +12,10 @@ public static class SeriesSort
     /// Applies the correct sort based on <see cref="SortOptions"/>
     /// </summary>
     /// <param name="query"></param>
-    /// <param name="ctx"></param>
     /// <param name="userId"></param>
     /// <param name="sortOptions"></param>
     /// <returns></returns>
-    public static IQueryable<Series> Sort(this IQueryable<Series> query, DataContext ctx, int userId, SortOptions? sortOptions)
+    public static IQueryable<Series> Sort(this IQueryable<Series> query, int userId, SortOptions? sortOptions)
     {
         // If no sort options, default to using SortName
         sortOptions ??= new SortOptions()
