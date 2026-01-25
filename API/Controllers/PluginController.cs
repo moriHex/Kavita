@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
+using API.DTOs.Account;
 using API.Entities.Enums;
 using API.Middleware;
 using API.Services;
@@ -81,7 +82,7 @@ public class PluginController(IUnitOfWork unitOfWork, ITokenService tokenService
     /// <remarks>Will always return null if the Auth Key does not belong to this account</remarks>
     /// <returns></returns>
     [HttpGet("authkey-expires")]
-    public async Task<ActionResult<DateTime?>> GetAuthKeyExpiration()
+    public async Task<ActionResult<AuthKeyExpiresAtDto>> GetAuthKeyExpiration()
     {
         var authKey = AuthKey;
         if (string.IsNullOrEmpty(authKey))
@@ -89,6 +90,9 @@ public class PluginController(IUnitOfWork unitOfWork, ITokenService tokenService
 
         var exp = await unitOfWork.UserRepository.GetAuthKeyExpiration(authKey, UserId);
 
-        return Ok(new { ExpiresAt = exp?.ToUniversalTime() });
+        return Ok(new AuthKeyExpiresAtDto
+        {
+            ExpiresAt = exp?.ToUniversalTime()
+        });
     }
 }
