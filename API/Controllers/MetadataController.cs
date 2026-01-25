@@ -236,8 +236,7 @@ public class MetadataController(IUnitOfWork unitOfWork, IExternalMetadataService
 
     private async Task PrepareSeriesDetail(List<UserReviewDto> userReviews, SeriesDetailPlusDto? ret)
     {
-        var isAdmin = User.IsInRole(PolicyConstants.AdminRole);
-        var user = await unitOfWork.UserRepository.GetUserByIdAsync(UserId)!;
+        var user = await unitOfWork.UserRepository.GetUserByIdAsync(UserId);
 
         if (ret != null)
         {
@@ -245,13 +244,18 @@ public class MetadataController(IUnitOfWork unitOfWork, IExternalMetadataService
             ret.Reviews = userReviews;
         }
 
-        if (!isAdmin && ret?.Recommendations != null && user != null)
+        if (ret?.Recommendations != null && user != null)
         {
-            // Re-obtain owned series and take into account age restriction
+            // Re-obtain owned series and take into account age restriction and include series progress
             var seriesIds = ret.Recommendations.OwnedSeries.Select(s => s.Id);
-            ret.Recommendations.OwnedSeries =
-                await unitOfWork.SeriesRepository.GetSeriesDtoByIdsAsync(seriesIds, user);
-            ret.Recommendations.ExternalSeries = [];
+            ret.Recommendations.OwnedSeries = await unitOfWork.SeriesRepository.GetSeriesDtoByIdsAsync(seriesIds, user);
+
+            // Don't display external series to non-admins (Why?)
+            if (!User.IsInRole(PolicyConstants.AdminRole))
+            {
+                ret.Recommendations.ExternalSeries = [];
+            }
+
         }
 
         if (ret?.Recommendations != null && user != null)
